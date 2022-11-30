@@ -15,7 +15,7 @@ Metadata:
     SourceCodeUrl: 'https://github.com/awslabs/aws-athena-query-federation'
 Parameters:
   AuthType:
-    Description: 'auth details TLS/SCRAM/IAM/NOAUTH'
+    Description: 'auth details TLS/SCRAM/IAM/NOAUTH/SASL_PLAINTEXT'
     Type: String
     Default: NOAUTH
     AllowedValues:
@@ -23,6 +23,7 @@ Parameters:
       - SCRAM
       - NOAUTH
       - IAM
+      - SASL_PLAINTEXT
   KafkaEndpoint:
     Description: 'Kafka/MSK cluster endpoint'
     Type: String

@@ -1,0 +1,11 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "mskauth"
+s3_bucket = "aws-sam-cli-managed-default-samclisourcebucket-f0b7okmyy4lz"
+s3_prefix = "mskauth"
+region = "us-east-1"
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = "AuthType=\"SASL_PLAINTEXT\" KafkaEndpoint=\"ec2-3-89-209-205.compute-1.amazonaws.com:9092\" LambdaFunctionName=\"mskauthlambda\" SecretNamePrefix=\"msk-sasl-palintext\" SpillBucket=\"trianz-snowflake-athena-jdbc\" SpillPrefix=\"athena-spill\" LambdaTimeout=\"900\" LambdaMemory=\"3008\" DisableSpillEncryption=\"false\" SecurityGroupIds=\"sg-0398b41444bcbb0ee\" SubnetIds=\"subnet-01743fd8cca039a9e\" CertificatesS3Reference=\"\" GlueRegistryArn=\"arn:aws:glue:us-east-1:430676967608:registry/athena-msk-us-east-1\" LambdaRoleARN=\"\""
+

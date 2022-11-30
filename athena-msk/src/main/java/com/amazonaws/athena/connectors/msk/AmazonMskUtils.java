@@ -81,6 +81,7 @@ public class AmazonMskUtils
     private static final String AUTH_TLS = "TLS";
     private static final String AUTH_SCRAM = "SCRAM";
     private static final String AUTH_IAM = "IAM";
+    private static final String AUTH_SASL_PLAINTEXT = "SASL_PLAINTEXT";
     private static final String KAFKA_SASL_JAAS_CONFIG = "sasl.jaas.config";
     private static final String KAFKA_SASL_MECHANISM = "sasl.mechanism";
     private static final String KAFKA_SASL_CLIENT_CALLBACK_HANDLER_CLASS = "sasl.client.callback.handler.class";
@@ -215,6 +216,9 @@ public class AmazonMskUtils
                 break;
             case NO_AUTH:
                 break;
+            case AUTH_SASL_PLAINTEXT:
+                setSASLPlainAuthKafkaProperties(properties);
+                break;
             default:
                 LOGGER.error("Unsupported Authentication type {}", authType);
                 throw new RuntimeException("Unsupported Authentication type" + authType);
@@ -274,11 +278,23 @@ public class AmazonMskUtils
         properties.setProperty(KAFKA_SECURITY_PROTOCOL, "SASL_SSL");
         properties.setProperty(KAFKA_SASL_MECHANISM, "SCRAM-SHA-512");
         Map<String, Object> cred = getCredentialsAsKeyValue();
-        String username = cred.get(AmazonMskConstants.SCRAM_USERNAME).toString();
-        String password = cred.get(AmazonMskConstants.SCRAM_PWD).toString();
+        String username = cred.get(AmazonMskConstants.AWS_SECRET_USERNAME).toString();
+        String password = cred.get(AmazonMskConstants.AWS_SECRET_PWD).toString();
         properties.put(KAFKA_SASL_JAAS_CONFIG, "org.apache.kafka.common.security.scram.ScramLoginModule required username=\"" + username + "\" password=\"" + password + "\";");
         return properties;
     }
+
+    protected static Properties setSASLPlainAuthKafkaProperties(Properties properties) throws Exception
+    {
+        properties.setProperty(KAFKA_SECURITY_PROTOCOL, "SASL_PLAINTEXT");
+        properties.setProperty(KAFKA_SASL_MECHANISM, "PLAIN");
+        Map<String, Object> cred = getCredentialsAsKeyValue();
+        String username = cred.get(AmazonMskConstants.AWS_SECRET_USERNAME).toString();
+        String password = cred.get(AmazonMskConstants.AWS_SECRET_PWD).toString();
+        properties.put(KAFKA_SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + username + "\" password=\"" + password + "\";");
+        return properties;
+    }
+
     /**
      * Downloads the truststore and keystore certificates from S3 to temp directory.
      *
