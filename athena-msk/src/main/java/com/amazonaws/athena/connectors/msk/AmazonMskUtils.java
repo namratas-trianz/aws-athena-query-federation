@@ -82,6 +82,7 @@ public class AmazonMskUtils
     private static final String AUTH_SCRAM = "SCRAM";
     private static final String AUTH_IAM = "IAM";
     private static final String AUTH_SASL_PLAINTEXT = "SASL_PLAINTEXT";
+    private static final String AUTH_SASL_SSL = "SASL_SSL";
     private static final String KAFKA_SASL_JAAS_CONFIG = "sasl.jaas.config";
     private static final String KAFKA_SASL_MECHANISM = "sasl.mechanism";
     private static final String KAFKA_SASL_CLIENT_CALLBACK_HANDLER_CLASS = "sasl.client.callback.handler.class";
@@ -217,7 +218,10 @@ public class AmazonMskUtils
             case NO_AUTH:
                 break;
             case AUTH_SASL_PLAINTEXT:
-                setSASLPlainAuthKafkaProperties(properties);
+                setSaslPlainAuthKafkaProperties(properties);
+                break;
+            case AUTH_SASL_SSL:
+                setSaslSslAuthKafkaProperties(properties);
                 break;
             default:
                 LOGGER.error("Unsupported Authentication type {}", authType);
@@ -284,7 +288,14 @@ public class AmazonMskUtils
         return properties;
     }
 
-    protected static Properties setSASLPlainAuthKafkaProperties(Properties properties) throws Exception
+    /**
+     * Creates the required SASL based settings for kafka consumer.
+     *
+     * @param properties - SASL/PLAINTEXT properties for kafka consumer
+     * @return {@link Properties}
+     * @throws Exception - {@link Exception}
+     */
+    protected static Properties setSaslPlainAuthKafkaProperties(Properties properties) throws Exception
     {
         properties.setProperty(KAFKA_SECURITY_PROTOCOL, "SASL_PLAINTEXT");
         properties.setProperty(KAFKA_SASL_MECHANISM, "PLAIN");
@@ -292,6 +303,25 @@ public class AmazonMskUtils
         String username = cred.get(AmazonMskConstants.AWS_SECRET_USERNAME).toString();
         String password = cred.get(AmazonMskConstants.AWS_SECRET_PWD).toString();
         properties.put(KAFKA_SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + username + "\" password=\"" + password + "\";");
+        return properties;
+    }
+    /**
+     * Creates the required SASL based settings for kafka consumer.
+     *
+     * @param properties - SASL/SSL properties for kafka consumer
+     * @return {@link Properties}
+     * @throws Exception - {@link Exception}
+     */
+    protected static Properties setSaslSslAuthKafkaProperties(Properties properties) throws Exception
+    {
+        //Download certificates for kafka connection from S3 and save to temp directory
+        Path tempDir = copyCertificatesFromS3ToTempFolder();
+        Map<String, Object> cred = getCredentialsAsKeyValue();
+        properties.setProperty(KAFKA_SECURITY_PROTOCOL, "SASL_SSL");
+        properties.setProperty(KAFKA_SASL_MECHANISM, "PLAIN");
+        properties.setProperty(KAFKA_TRUSTSTORE_LOCATION, tempDir + File.separator + TRUSTSTORE);
+        properties.setProperty(KAFKA_TRUSTSTORE_PASSWORD, cred.get(AmazonMskConstants.TRUSTSTORE_PASSWORD).toString());
+        properties.put(KAFKA_SASL_JAAS_CONFIG, "org.apache.kafka.common.security.plain.PlainLoginModule required username=\"" + cred.get(AmazonMskConstants.AWS_SECRET_USERNAME).toString() + "\" password=\"" + cred.get(AmazonMskConstants.AWS_SECRET_PWD).toString() + "\";");
         return properties;
     }
 
