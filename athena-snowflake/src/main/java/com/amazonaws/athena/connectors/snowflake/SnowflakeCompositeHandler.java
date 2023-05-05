@@ -33,6 +33,8 @@ import com.amazonaws.athena.connector.lambda.handlers.CompositeHandler;
 public class SnowflakeCompositeHandler
         extends CompositeHandler
 {
+    //Test
+    //Test123
     public SnowflakeCompositeHandler()
     {
         super(new SnowflakeMetadataHandler(System.getenv()), new SnowflakeRecordHandler(System.getenv()));
